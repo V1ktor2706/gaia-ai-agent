@@ -2,8 +2,6 @@
 gradio
 requests
 pandas
-smolagents[litellm]
-litellm==1.105.1
-mcp==2.3.0
+smolagents[openai]
 ddgs
 markdownify
