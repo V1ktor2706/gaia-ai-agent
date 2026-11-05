@@ -29,18 +29,30 @@ class BasicAgent:
             api_base="https://generativelanguage.googleapis.com/v1beta/openai/",
             api_key=os.environ["GEMINI_API_KEY"]
         )
-
-    
         
-
         self.agent = ToolCallingAgent(
             tools=[
-                DuckDuckGoSearchTool(max_results=5),
-                VisitWebpageTool()
+                DuckDuckGoSearchTool(max_results=3),
+                VisitWebpageTool(max_output_length=6000)
             ],
             model=self.model,
-            max_steps=7
+            max_steps=12,
+            instructions="""
+            You are a research assistant solving factual questions.
+        
+            Rules:
+            1. Search the web when information needs verification.
+            2. Prioritize official and reliable sources.
+            3. Pay close attention to dates and historical information.
+            4. Avoid repeating searches unnecessarily.
+            5. Once you find the answer, immediately call the
+               final_answer tool.
+            6. Follow the exact output format requested.
+            7. Never return tool calls as your final answer.
+            8. If you cannot verify the answer, do not invent it.
+            """
         )
+
 
 
 
