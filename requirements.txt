@@ -2,6 +2,6 @@
 gradio
 requests
 pandas
-smolagents[openai]
+smolagents[litellm]
 ddgs
 markdownify
