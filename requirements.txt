@@ -3,3 +3,4 @@ gradio
 requests
 pandas
 smolagents[openai]
+ddgs
