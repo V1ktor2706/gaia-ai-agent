@@ -29,7 +29,7 @@ class BasicAgent:
     
 
         self.model = OpenAIModel(
-            model_id="gemini-3.5-flash",
+            model_id="gemini-3.5-flash-lite",
             api_base="https://generativelanguage.googleapis.com/v1beta/openai/",
             api_key=os.environ["GEMINI_API_KEY"]
         )
