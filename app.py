@@ -3,7 +3,7 @@ import gradio as gr
 import requests
 import inspect
 import pandas as pd
-from smolagents import CodeAgent, OpenAIModel
+from smolagents import CodeAgent, OpenAIModel, DuckDuckGoSearchTool
 import spaces
 
 @spaces.GPU(duration=1)
@@ -25,11 +25,15 @@ class BasicAgent:
             api_key=os.environ["GEMINI_API_KEY"]
         )
 
+    
         self.agent = CodeAgent(
-            tools=[],
+            tools=[
+                DuckDuckGoSearchTool(max_results=5)
+            ],
             model=self.model,
-            max_steps=3
+            max_steps=5
         )
+
 
     def __call__(self, question: str) -> str:
         prompt = f"""
