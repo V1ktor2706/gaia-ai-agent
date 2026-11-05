@@ -3,6 +3,7 @@ import gradio as gr
 import requests
 import inspect
 import pandas as pd
+import random
 
 from smolagents import (
     ToolCallingAgent,
@@ -113,16 +114,28 @@ def test_single_question(question):
         return f"ERROR: {str(e)}"
 
 
+
 def load_random_question():
     try:
-        url = f"{DEFAULT_API_URL}/random-question"
-
-        response = requests.get(url, timeout=20)
+        response = requests.get(
+            f"{DEFAULT_API_URL}/questions",
+            timeout=20
+        )
         response.raise_for_status()
 
-        data = response.json()
+        questions = response.json()
 
-        return data["question"]
+        text_questions = [
+            q for q in questions
+            if not q.get("file_name")
+        ]
+
+        if not text_questions:
+            return "No text-only questions available."
+
+        selected = random.choice(text_questions)
+
+        return selected["question"]
 
     except Exception as e:
         return f"Error loading question: {e}"
