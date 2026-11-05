@@ -8,8 +8,8 @@ import random
 from smolagents import (
     ToolCallingAgent,
     OpenAIModel,
-    DuckDuckGoSearchTool,
-    VisitWebpageTool
+    VisitWebpageTool,
+    tool
 )
 
 import spaces
@@ -25,6 +25,39 @@ DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 # --- Basic Agent Definition ---
 # ----- THIS IS WERE YOU CAN BUILD WHAT YOU WANT ------
 
+
+@tool
+def web_search(query: str) -> str:
+    """Search Google using the Serper API.
+
+    Args:
+        query: The search query.
+    """
+    response = requests.post(
+        "https://google.serper.dev/search",
+        headers={
+            "X-API-KEY": os.environ["SERPER_API_KEY"],
+            "Content-Type": "application/json"
+        },
+        json={"q": query, "num": 5},
+        timeout=15
+    )
+
+    response.raise_for_status()
+
+    results = response.json().get("organic", [])
+
+    if not results:
+        return "No results found."
+
+    return "\n\n".join(
+        f"{item.get('title', '')}\n"
+        f"{item.get('link', '')}\n"
+        f"{item.get('snippet', '')}"
+        for item in results[:5]
+    )
+
+
 class BasicAgent:
     def __init__(self):
     
@@ -39,7 +72,7 @@ class BasicAgent:
         
         self.agent = ToolCallingAgent(
             tools=[
-                DuckDuckGoSearchTool(max_results=3),
+                web_search,
                 VisitWebpageTool(max_output_length=6000)
             ],
             model=self.model,
@@ -92,7 +125,7 @@ class BasicAgent:
     
         result = self.agent.run(
             prompt,
-            max_steps=8,
+            max_steps=12,
             return_full_result=True
         )
     
