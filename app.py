@@ -4,6 +4,11 @@ import requests
 import inspect
 import pandas as pd
 from smolagents import CodeAgent, OpenAIModel
+import spaces
+
+@spaces.GPU(duration=1)
+def zerogpu_probe():
+    return "Ready"
 
 # (Keep Constants as is)
 # --- Constants ---
@@ -162,6 +167,14 @@ def run_and_submit_all( profile: gr.OAuthProfile | None):
 
 # --- Build Gradio Interface using Blocks ---
 with gr.Blocks() as demo:
+    probe_button = gr.Button(visible=False)
+    probe_output = gr.Textbox(visible=False)
+
+    probe_button.click(
+        fn=zerogpu_probe,
+        outputs=probe_output
+    )
+    
     gr.Markdown("# Basic Agent Evaluation Runner")
     gr.Markdown(
         """
