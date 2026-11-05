@@ -3,12 +3,14 @@ import gradio as gr
 import requests
 import inspect
 import pandas as pd
+
 from smolagents import (
     ToolCallingAgent,
-    LiteLLMModel,
+    OpenAIModel,
     DuckDuckGoSearchTool,
     VisitWebpageTool
 )
+
 import spaces
 
 @spaces.GPU(duration=1)
@@ -25,10 +27,13 @@ DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 class BasicAgent:
     def __init__(self):
     
-        self.model = LiteLLMModel(
-            model_id="gemini/gemini-3.5-flash-lite",
+
+        self.model = OpenAIModel(
+            model_id="gemini-3.5-flash-lite",
+            api_base="https://generativelanguage.googleapis.com/v1beta/openai/",
             api_key=os.environ["GEMINI_API_KEY"]
         )
+
   
         
         self.agent = ToolCallingAgent(
