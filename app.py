@@ -3,6 +3,7 @@ import gradio as gr
 import requests
 import inspect
 import pandas as pd
+from smolagents import CodeAgent, OpenAIModel
 
 # (Keep Constants as is)
 # --- Constants ---
@@ -10,14 +11,33 @@ DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 
 # --- Basic Agent Definition ---
 # ----- THIS IS WERE YOU CAN BUILD WHAT YOU WANT ------
+
 class BasicAgent:
     def __init__(self):
-        print("BasicAgent initialized.")
+        self.model = OpenAIModel(
+            model_id="gemini-2.5-flash",
+            api_base="https://generativelanguage.googleapis.com/v1beta/openai/",
+            api_key=os.environ["GEMINI_API_KEY"]
+        )
+
+        self.agent = CodeAgent(
+            tools=[],
+            model=self.model,
+            max_steps=3
+        )
+
     def __call__(self, question: str) -> str:
-        print(f"Agent received question (first 50 chars): {question[:50]}...")
-        fixed_answer = "This is a default answer."
-        print(f"Agent returning fixed answer: {fixed_answer}")
-        return fixed_answer
+        prompt = f"""
+        Answer the following question accurately.
+        Return ONLY the final answer.
+        No explanations or extra text.
+
+        Question: {question}
+        """
+
+        answer = self.agent.run(prompt)
+        return str(answer).strip()
+
 
 def run_and_submit_all( profile: gr.OAuthProfile | None):
     """
