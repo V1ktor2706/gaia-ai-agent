@@ -3,7 +3,12 @@ import gradio as gr
 import requests
 import inspect
 import pandas as pd
-from smolagents import ToolCallingAgent, OpenAIModel, DuckDuckGoSearchTool
+from smolagents import (
+    ToolCallingAgent,
+    OpenAIModel,
+    DuckDuckGoSearchTool,
+    VisitWebpageTool
+)
 import spaces
 
 @spaces.GPU(duration=1)
@@ -27,13 +32,16 @@ class BasicAgent:
 
     
         
+
         self.agent = ToolCallingAgent(
             tools=[
-                DuckDuckGoSearchTool(max_results=5)
+                DuckDuckGoSearchTool(max_results=5),
+                VisitWebpageTool()
             ],
             model=self.model,
-            max_steps=5
+            max_steps=7
         )
+
 
 
 
