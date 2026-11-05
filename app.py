@@ -5,7 +5,7 @@ import inspect
 import pandas as pd
 from smolagents import (
     ToolCallingAgent,
-    OpenAIModel,
+    LiteLLMModel,
     DuckDuckGoSearchTool,
     VisitWebpageTool
 )
@@ -24,11 +24,12 @@ DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 
 class BasicAgent:
     def __init__(self):
-        self.model = OpenAIModel(
-            model_id="gemini-3.5-flash-lite",
-            api_base="https://generativelanguage.googleapis.com/v1beta/openai/",
+    
+        self.model = LiteLLMModel(
+            model_id="gemini/gemini-3.5-flash-lite",
             api_key=os.environ["GEMINI_API_KEY"]
         )
+  
         
         self.agent = ToolCallingAgent(
             tools=[
