@@ -44,6 +44,16 @@ class BasicAgent:
         return str(answer).strip()
 
 
+def test_single_question(question):
+    try:
+        agent = BasicAgent()
+        answer = agent(question)
+        return answer
+    except Exception as e:
+        return f"ERROR: {str(e)}"
+
+
+
 def run_and_submit_all( profile: gr.OAuthProfile | None):
     """
     Fetches all questions, runs the BasicAgent on them, submits all answers,
@@ -174,6 +184,27 @@ with gr.Blocks() as demo:
         fn=zerogpu_probe,
         outputs=probe_output
     )
+
+    
+    gr.Markdown("## Test Our AI Agent")
+
+    test_question = gr.Textbox(
+        label="Your Question",
+        value="What is the capital of Bulgaria?"
+    )
+
+    test_button = gr.Button("Test Agent")
+
+    test_answer = gr.Textbox(
+        label="Agent Answer"
+    )
+
+    test_button.click(
+        fn=test_single_question,
+        inputs=test_question,
+        outputs=test_answer
+    )
+
     
     gr.Markdown("# Basic Agent Evaluation Runner")
     gr.Markdown(
