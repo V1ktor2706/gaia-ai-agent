@@ -5,3 +5,4 @@ pandas
 smolagents[litellm]
 ddgs
 markdownify
+mcp
