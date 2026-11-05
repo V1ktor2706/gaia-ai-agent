@@ -20,7 +20,7 @@ DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 class BasicAgent:
     def __init__(self):
         self.model = OpenAIModel(
-            model_id="gemini-2.5-flash",
+            model_id="gemini-3.8-flash",
             api_base="https://generativelanguage.googleapis.com/v1beta/openai/",
             api_key=os.environ["GEMINI_API_KEY"]
         )
