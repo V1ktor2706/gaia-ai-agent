@@ -67,6 +67,22 @@ def test_single_question(question):
         return f"ERROR: {str(e)}"
 
 
+def load_random_question():
+    try:
+        url = f"{DEFAULT_API_URL}/random-question"
+
+        response = requests.get(url, timeout=20)
+        response.raise_for_status()
+
+        data = response.json()
+
+        return data["question"]
+
+    except Exception as e:
+        return f"Error loading question: {e}"
+
+
+
 
 def run_and_submit_all( profile: gr.OAuthProfile | None):
     """
@@ -206,7 +222,8 @@ with gr.Blocks() as demo:
         label="Your Question",
         value="What is the capital of Bulgaria?"
     )
-
+    
+    random_button = gr.Button("Load Random GAIA Question")
     test_button = gr.Button("Test Agent")
 
     test_answer = gr.Textbox(
@@ -217,6 +234,11 @@ with gr.Blocks() as demo:
         fn=test_single_question,
         inputs=test_question,
         outputs=test_answer
+    )
+
+    random_button.click(
+        fn=load_random_question,
+        outputs=test_question
     )
 
     
