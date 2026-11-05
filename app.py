@@ -63,17 +63,35 @@ class BasicAgent:
 
 
 
+   
     def __call__(self, question: str) -> str:
         prompt = f"""
         Answer the following question accurately.
-        Return ONLY the final answer.
-        No explanations or extra text.
-
+    
+        Rules:
+        - Use web search when necessary.
+        - Avoid repeating the same searches.
+        - Once you have enough evidence, call final_answer.
+        - Return ONLY the requested answer.
+        - Do not include explanations or tool calls.
+        - If the answer cannot be verified, return UNKNOWN.
+    
         Question: {question}
         """
+    
+        result = self.agent.run(
+            prompt,
+            max_steps=8,
+            return_full_result=True
+        )
+    
+        print("Agent status:", result.state)
+    
+        if result.state != "success":
+            return f"INCOMPLETE: {result.state}"
+    
+        return str(result.output).strip()
 
-        answer = self.agent.run(prompt)
-        return str(answer).strip()
 
 
 def test_single_question(question):
