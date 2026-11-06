@@ -58,6 +58,32 @@ def web_search(query: str) -> str:
     )
 
 
+def read_gaia_text_file(task_id: str, file_name: str) -> str:
+    if not file_name.lower().endswith((".txt", ".py")):
+        return ""
+
+    url = f"{DEFAULT_API_URL}/files/{task_id}"
+
+    try:
+        response = requests.get(url, timeout=20)
+        response.raise_for_status()
+
+        if len(response.content) > 100_000:
+            return ""
+
+        content = response.content.decode(
+            "utf-8-sig",
+            errors="replace"
+        )
+
+        return content
+
+    except requests.exceptions.RequestException as e:
+        print(f"Attachment download failed: {e}")
+        return ""
+
+
+
 class BasicAgent:
     def __init__(self):
     
