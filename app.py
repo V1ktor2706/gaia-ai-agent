@@ -6,6 +6,7 @@ import pandas as pd
 import random
 from huggingface_hub import hf_hub_download
 from pathlib import Path
+from openpyxl import load_workbook
 
 from smolagents import (
     ToolCallingAgent,
@@ -60,10 +61,60 @@ def web_search(query: str) -> str:
     )
 
 
+def read_gaia_xlsx_file(file_name: str) -> str:
+    if Path(file_name).name != file_name:
+        return ""
+
+    file_path = hf_hub_download(
+        repo_id="gaia-benchmark/GAIA",
+        filename=f"2023/validation/{file_name}",
+        repo_type="dataset",
+        token=os.environ["HF_TOKEN"]
+    )
+
+    if os.path.getsize(file_path) > 5_000_000:
+        return ""
+
+    workbook = load_workbook(
+        file_path,
+        read_only=True,
+        data_only=True,
+        keep_links=False
+    )
+
+    try:
+        content = []
+
+        for sheet in workbook.worksheets[:3]:
+            content.append(f"Sheet: {sheet.title}")
+
+            for row in sheet.iter_rows(
+                max_row=80,
+                max_col=20,
+                values_only=True
+            ):
+                if any(value is not None for value in row):
+                    line = " | ".join(
+                        str(value) if value is not None else ""
+                        for value in row
+                    )
+                    content.append(line)
+
+                if len("\n".join(content)) >= 12000:
+                    break
+
+        return "\n".join(content)[:12000]
+
+    finally:
+        workbook.close()
+
 
 def read_gaia_text_file(file_name: str) -> str:
     if Path(file_name).name != file_name:
         return ""
+
+    if file_name.lower().endswith(".xlsx"):
+        return read_gaia_xlsx_file(file_name)
 
     if not file_name.lower().endswith((".py", ".txt")):
         return ""
@@ -532,6 +583,26 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"GAIA download error: {e}")
+
+    
+    try:
+        questions = requests.get(
+            f"{DEFAULT_API_URL}/questions",
+            timeout=20
+        ).json()
+
+        excel_file = next(
+            (q["file_name"] for q in questions
+             if (q.get("file_name") or "").endswith(".xlsx")),
+            None
+        )
+
+        if excel_file:
+            content = read_gaia_text_file(excel_file)
+            print("GAIA XLSX:", "SUCCESS" if content else "EMPTY")
+
+    except Exception as e:
+        print("GAIA XLSX ERROR:", e)
 
     
     demo.launch(debug=True, share=False)
