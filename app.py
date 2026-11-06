@@ -700,28 +700,5 @@ if __name__ == "__main__":
     print("-"*(60 + len(" App Starting ")) + "\n")
 
     print("Launching Gradio Interface for Basic Agent Evaluation...")
-
-    
-    try:
-        questions = requests.get(
-            f"{DEFAULT_API_URL}/questions",
-            timeout=20
-        ).json()
-
-        audio_file = next(
-            (q["file_name"] for q in questions
-             if (q.get("file_name") or "").lower().endswith(".mp3")),
-            None
-        )
-
-        if audio_file:
-            path = download_gaia_audio(audio_file)
-            print("GAIA MP3:", "SUCCESS" if os.path.isfile(path) else "MISSING")
-        else:
-            print("GAIA MP3: NO FILE FOUND")
-
-    except Exception as e:
-        print("GAIA MP3 ERROR:", e)
-
-    
+        
     demo.launch(debug=True, share=False)
