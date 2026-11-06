@@ -1,15 +1,17 @@
----
-title: Template Final Assignment
-emoji: 🕵🏻‍♂️
-colorFrom: indigo
-colorTo: indigo
-sdk: gradio
-sdk_version: 5.25.2
-app_file: app.py
-pinned: false
-hf_oauth: true
-# optional, default duration is 8 hours/480 minutes. Max duration is 30 days/43200 minutes.
-hf_oauth_expiration_minutes: 480
----
+GAIA AI Agent
+An AI research agent built with Python, smolagents, and Google Gemini for the Hugging Face AI Agents Course.
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+GAIA Final Evaluation: 55% (11/20 correct answers)
+
+Features
+- Web search using Serper (Google Search)
+- Webpage content extraction
+- Python, text and Excel file analysis
+- Image and audio understanding
+- Interactive Gradio interface
+Tech Stack
+
+Python · smolagents · Gemini API · Serper API · Gradio · Hugging Face
+
+Live Demo on Hugging Face:
+https://huggingface.co/spaces/Viktor2706/gaia-smolagents-final?utm_source=chatgpt.com
