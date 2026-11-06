@@ -4,6 +4,8 @@ import requests
 import inspect
 import pandas as pd
 import random
+from huggingface_hub import hf_hub_download
+from pathlib import Path
 
 from smolagents import (
     ToolCallingAgent,
@@ -58,29 +60,31 @@ def web_search(query: str) -> str:
     )
 
 
-def read_gaia_text_file(task_id: str, file_name: str) -> str:
-    if not file_name.lower().endswith((".txt", ".py")):
+
+def read_gaia_text_file(file_name: str) -> str:
+    if Path(file_name).name != file_name:
         return ""
 
-    url = f"{DEFAULT_API_URL}/files/{task_id}"
-
-    try:
-        response = requests.get(url, timeout=20)
-        response.raise_for_status()
-
-        if len(response.content) > 100_000:
-            return ""
-
-        content = response.content.decode(
-            "utf-8-sig",
-            errors="replace"
-        )
-
-        return content
-
-    except requests.exceptions.RequestException as e:
-        print(f"Attachment download failed: {e}")
+    if not file_name.lower().endswith((".py", ".txt")):
         return ""
+
+    file_path = hf_hub_download(
+        repo_id="gaia-benchmark/GAIA",
+        filename=f"2023/validation/{file_name}",
+        repo_type="dataset",
+        token=os.environ["HF_TOKEN"]
+    )
+
+    if os.path.getsize(file_path) > 100_000:
+        return ""
+
+    with open(
+        file_path,
+        "r",
+        encoding="utf-8-sig",
+        errors="replace"
+    ) as file:
+        return file.read()
 
 
 
@@ -411,4 +415,17 @@ if __name__ == "__main__":
     print("-"*(60 + len(" App Starting ")) + "\n")
 
     print("Launching Gradio Interface for Basic Agent Evaluation...")
+
+    
+    try:
+        content = read_gaia_text_file(
+            "f918266a-b3e0-4914-865d-4faa564f1aef.py"
+        )
+
+        print("GAIA file download:", "SUCCESS" if content else "EMPTY")
+
+    except Exception as e:
+        print(f"GAIA download error: {e}")
+
+    
     demo.launch(debug=True, share=False)
