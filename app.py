@@ -171,6 +171,27 @@ def check_gaia_files():
         return f"Error: {e}"
 
 
+def download_gaia_image(file_name: str) -> str:
+    if Path(file_name).name != file_name:
+        raise ValueError("Invalid file name")
+
+    if not file_name.lower().endswith(".png"):
+        raise ValueError("Not a PNG file")
+
+    file_path = hf_hub_download(
+        repo_id="gaia-benchmark/GAIA",
+        filename=f"2023/validation/{file_name}",
+        repo_type="dataset",
+        token=os.environ["HF_TOKEN"]
+    )
+
+    if os.path.getsize(file_path) > 10_000_000:
+        raise ValueError("Image is too large")
+
+    return file_path
+
+
+
 class BasicAgent:
     def __init__(self):
     
@@ -603,6 +624,28 @@ if __name__ == "__main__":
 
     except Exception as e:
         print("GAIA XLSX ERROR:", e)
+
+    
+    try:
+        questions = requests.get(
+            f"{DEFAULT_API_URL}/questions",
+            timeout=20
+        ).json()
+
+        image_file = next(
+            (q["file_name"] for q in questions
+             if (q.get("file_name") or "").lower().endswith(".png")),
+            None
+        )
+
+        if image_file:
+            path = download_gaia_image(image_file)
+            print("GAIA PNG:", "SUCCESS" if os.path.isfile(path) else "MISSING")
+        else:
+            print("GAIA PNG: NO FILE FOUND")
+
+    except Exception as e:
+        print("GAIA PNG ERROR:", e)
 
     
     demo.launch(debug=True, share=False)
