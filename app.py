@@ -87,6 +87,38 @@ def read_gaia_text_file(file_name: str) -> str:
         return file.read()
 
 
+def check_gaia_files():
+    try:
+        response = requests.get(
+            f"{DEFAULT_API_URL}/questions",
+            timeout=20
+        )
+        response.raise_for_status()
+
+        questions = response.json()
+        file_types = {}
+
+        for question in questions:
+            file_name = question.get("file_name")
+
+            if file_name:
+                extension = os.path.splitext(file_name)[1].lower()
+                extension = extension or "Other"
+            else:
+                extension = "No attachment"
+
+            file_types[extension] = file_types.get(extension, 0) + 1
+
+        result = f"Total questions: {len(questions)}\n\n"
+
+        for extension, count in sorted(file_types.items()):
+            result += f"{extension}: {count}\n"
+
+        return result
+
+    except Exception as e:
+        return f"Error: {e}"
+
 
 class BasicAgent:
     def __init__(self):
@@ -420,6 +452,20 @@ with gr.Blocks() as demo:
         fn=load_random_question,
         outputs=test_question
     )
+
+    
+    check_files_button = gr.Button("Check GAIA File Types")
+
+    file_types_output = gr.Textbox(
+        label="GAIA File Statistics",
+        lines=8
+    )
+
+    check_files_button.click(
+        fn=check_gaia_files,
+        outputs=file_types_output
+    )
+
 
     
     gr.Markdown("# Basic Agent Evaluation Runner")
