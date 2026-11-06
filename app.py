@@ -190,7 +190,24 @@ def download_gaia_image(file_name: str) -> str:
 
     return file_path
 
+def download_gaia_audio(file_name: str) -> str:
+    if Path(file_name).name != file_name:
+        raise ValueError("Invalid file name")
 
+    if not file_name.lower().endswith(".mp3"):
+        raise ValueError("Not an MP3 file")
+
+    file_path = hf_hub_download(
+        repo_id="gaia-benchmark/GAIA",
+        filename=f"2023/validation/{file_name}",
+        repo_type="dataset",
+        token=os.environ["HF_TOKEN"]
+    )
+
+    if os.path.getsize(file_path) > 20_000_000:
+        raise ValueError("Audio file is too large")
+
+    return file_path
 
 class BasicAgent:
     def __init__(self):
@@ -596,56 +613,25 @@ if __name__ == "__main__":
 
     
     try:
-        content = read_gaia_text_file(
-            "f918266a-b3e0-4914-865d-4faa564f1aef.py"
-        )
-
-        print("GAIA file download:", "SUCCESS" if content else "EMPTY")
-
-    except Exception as e:
-        print(f"GAIA download error: {e}")
-
-    
-    try:
         questions = requests.get(
             f"{DEFAULT_API_URL}/questions",
             timeout=20
         ).json()
 
-        excel_file = next(
+        audio_file = next(
             (q["file_name"] for q in questions
-             if (q.get("file_name") or "").endswith(".xlsx")),
+             if (q.get("file_name") or "").lower().endswith(".mp3")),
             None
         )
 
-        if excel_file:
-            content = read_gaia_text_file(excel_file)
-            print("GAIA XLSX:", "SUCCESS" if content else "EMPTY")
-
-    except Exception as e:
-        print("GAIA XLSX ERROR:", e)
-
-    
-    try:
-        questions = requests.get(
-            f"{DEFAULT_API_URL}/questions",
-            timeout=20
-        ).json()
-
-        image_file = next(
-            (q["file_name"] for q in questions
-             if (q.get("file_name") or "").lower().endswith(".png")),
-            None
-        )
-
-        if image_file:
-            path = download_gaia_image(image_file)
-            print("GAIA PNG:", "SUCCESS" if os.path.isfile(path) else "MISSING")
+        if audio_file:
+            path = download_gaia_audio(audio_file)
+            print("GAIA MP3:", "SUCCESS" if os.path.isfile(path) else "MISSING")
         else:
-            print("GAIA PNG: NO FILE FOUND")
+            print("GAIA MP3: NO FILE FOUND")
 
     except Exception as e:
-        print("GAIA PNG ERROR:", e)
+        print("GAIA MP3 ERROR:", e)
 
     
     demo.launch(debug=True, share=False)
