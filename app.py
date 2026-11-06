@@ -291,20 +291,40 @@ def run_and_submit_all( profile: gr.OAuthProfile | None):
     results_log = []
     answers_payload = []
     print(f"Running agent on {len(questions_data)} questions...")
+    
     for item in questions_data:
-        task_id = item.get("task_id")
-        question_text = item.get("question")
-        if not task_id or question_text is None:
-            print(f"Skipping item with missing task_id or question: {item}")
-            continue
-        try:
-            submitted_answer = agent(question_text)
-            answers_payload.append({"task_id": task_id, "submitted_answer": submitted_answer})
-            results_log.append({"Task ID": task_id, "Question": question_text, "Submitted Answer": submitted_answer})
-        except Exception as e:
-             print(f"Error running agent on task {task_id}: {e}")
-             results_log.append({"Task ID": task_id, "Question": question_text, "Submitted Answer": f"AGENT ERROR: {e}"})
+    task_id = item.get("task_id")
+    question_text = item.get("question")
+    file_name = item.get("file_name", "")
 
+    if not task_id or question_text is None:
+        print(f"Skipping item with missing task_id or question: {item}")
+        continue
+
+    try:
+        submitted_answer = agent(question_text, file_name)
+
+        answers_payload.append({
+            "task_id": task_id,
+            "submitted_answer": submitted_answer
+        })
+
+        results_log.append({
+            "Task ID": task_id,
+            "Question": question_text,
+            "File Name": file_name,
+            "Submitted Answer": submitted_answer
+        })
+
+    except Exception as e:
+        print(f"Error running agent on task {task_id}: {e}")
+        results_log.append({
+            "Task ID": task_id,
+            "Question": question_text,
+            "File Name": file_name,
+            "Submitted Answer": f"AGENT ERROR: {e}"
+        })
+        
     if not answers_payload:
         print("Agent did not produce any answers to submit.")
         return "Agent did not produce any answers to submit.", pd.DataFrame(results_log)
