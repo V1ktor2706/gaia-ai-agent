@@ -6,3 +6,4 @@ smolagents[openai]
 ddgs
 markdownify
 huggingface_hub
+openpyxl
