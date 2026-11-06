@@ -8,6 +8,7 @@ from huggingface_hub import hf_hub_download
 from pathlib import Path
 from openpyxl import load_workbook
 from PIL import Image
+import base64
 
 from smolagents import (
     ToolCallingAgent,
@@ -209,6 +210,68 @@ def download_gaia_audio(file_name: str) -> str:
         raise ValueError("Audio file is too large")
 
     return file_path
+
+
+def analyze_gaia_audio(file_name: str, question: str) -> str:
+    file_path = download_gaia_audio(file_name)
+
+    if os.path.getsize(file_path) > 12_000_000:
+        return "Audio file too large for inline analysis."
+
+    with open(file_path, "rb") as file:
+        audio_data = base64.b64encode(
+            file.read()
+        ).decode("utf-8")
+
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/"
+        "models/gemini-3.5-flash-lite:generateContent"
+    )
+
+    payload = {
+        "contents": [{
+            "role": "user",
+            "parts": [
+                {
+                    "text": (
+                        "Analyze this audio carefully to help answer: "
+                        + question +
+                        "\nTranscribe relevant speech and describe "
+                        "important sounds or music. "
+                        "Do not invent uncertain details."
+                    )
+                },
+                {
+                    "inlineData": {
+                        "mimeType": "audio/mpeg",
+                        "data": audio_data
+                    }
+                }
+            ]
+        }]
+    }
+
+    response = requests.post(
+        url,
+        headers={
+            "x-goog-api-key": os.environ["GEMINI_API_KEY"],
+            "Content-Type": "application/json"
+        },
+        json=payload,
+        timeout=90
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+    parts = data["candidates"][0]["content"]["parts"]
+
+    return "\n".join(
+        part["text"]
+        for part in parts
+        if "text" in part
+    )
+
 
 class BasicAgent:
     def __init__(self):
